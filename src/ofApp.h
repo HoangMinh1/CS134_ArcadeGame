@@ -2,102 +2,14 @@
 
 #include "ofMain.h"
 #include "ofxGui.h"
+#include "BaseObject.h"
+#include "Sprite.h"
+#include "SpriteSystem.h"
+#include "Emitter.h"
+#include "Enemies.h"
+#include "SpaceShip.h"
+#include "Explosion.h"
 
-class BaseObject {
-public:
-    BaseObject();
-    ofVec3f trans, scale;
-    float rot;
-    void setPosition(ofVec3f);
-    glm::mat4 getMatrix();
-
-};
-//end of BaseObject
-//--------------------------------------------------------------
-
-class Sprite: public BaseObject {
-public:
-    Sprite();
-    void draw();
-    float age();
-    void setImage(ofImage);
-    void update(); //added for part 2
-    ofImage image;
-    float width, height;
-    float birthtime; // elapsed time in ms
-    float lifespan;  //  time in ms
-    //float speed;    //   in pixels/sec
-    ofVec3f velocity; // in pixels/sec
-    string name;
-    bool haveImage;
-};
-//end of Sprite
-//--------------------------------------------------------------
-
-//Manage all sprites
-class SpriteSystem  {
-public:
-    void add(Sprite);
-    void remove(int);
-    void update();
-    void draw();
-    vector<Sprite> sprites;
-
-};
-//end of SpriteSystem
-//--------------------------------------------------------------
-
-class Emitter: public BaseObject {
-public:
-    Emitter(SpriteSystem *);
-    void draw();
-    void start();
-    void stop();
-    void setLifespan(float);
-    void setVelocity(ofVec3f);
-    void setSpeed(int);
-    void setChildImage(ofImage);
-    void setImage(ofImage);
-    void setRate(float);
-    void setChildSound(ofSoundPlayer);
-    void update();
-    SpriteSystem *sys;
-    float rate;
-    int speed;          // speed of the missle
-    ofVec3f heading;    // tell where the missles are heading
-    ofVec3f velocity;
-    float lifespan;
-    bool started;
-    float lastSpawned;
-    ofImage childImage;
-    ofImage image;
-    //added sound
-    ofSoundPlayer sound;    // sound when firing
-    bool drawable;
-    bool haveChildImage;    //image of missles
-    bool haveImage;         //image of self
-    //added Firing
-    bool isFiring;
-    bool haveSound;
-    float width, height;
-};
-//end of Emitter
-//--------------------------------------------------------------
-class EnemyEmitter: public Emitter {
-public:
-    float scale;    //used for moving
-    float cycles;   //used for moving
-    bool isKilled;
-    EnemyEmitter(SpriteSystem *);
-    void moveSinPath();
-    void moveSquarePath();
-    void beDestroyed();
-    void update();
-};
-
-
-//end of EnemyEmitter
-//--------------------------------------------------------------
 
 class ofApp : public ofBaseApp{
 
@@ -105,7 +17,7 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
-        void checkCollision();  //recently added
+        void checkCollision(vector<Sprite> missles, vector<Sprite> &enemies);  //recently added
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -118,21 +30,43 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+    
+    
     //manage gameState: start, game, end
     string gameState;
+    
+    // manage game features here
     unsigned int score = 0;
+    
+    
+    // background variables
+    ofImage background, background2;
+    ofVec3f bgPos = ofVec3f(0, 0, 0); //background position
+    ofVec3f bgPos2 = ofVec3f(2048, 0, 0);
+    bool switchBG = true;   //used for background switching
+    
+    // game objects
+    SpaceShip *spaceShip = NULL;
+    Viruses *virus = NULL;
+    Octopus *octopus = NULL;
+    vector<Explosion> ex;
+    
+    // variables to control when to spawn object
+    bool spawnViruses = false;
+    bool spawnOctopuses = false;
+    
+    
+    // miscellanous variables
     ofVec3f lastMouse;
     ofImage img;
     ofSoundPlayer firing, explosion;
-    //Emitter that represent spaceShip
-    Emitter *spaceShip = NULL;
-    EnemyEmitter *enemy = NULL;
     
     
+    // gui
     ofxPanel gui;
     ofxFloatSlider rate;
     ofxFloatSlider life;
-    ofxToggle enemySpawn;
     //ofxVec3Slider velocity;
     ofxLabel screenSize;
+    bool bHide = true;
 };
